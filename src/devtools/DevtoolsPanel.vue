@@ -8,7 +8,7 @@ import { useTheme } from "./useTheme";
 import { useQueryClient } from "../useQueryClient";
 
 import Logo from "./components/Logo.vue";
-import ActiveQueryPanel from "./components/ActiveQueryPanel.vue";
+import ActiveQueryPanel from "./active-query-panel/ActiveQueryPanel.vue";
 import QueryItem from "./components/QueryItem.vue";
 import QueryOptions from "./components/QueryOptions.vue";
 import QueryStates from "./components/QueryStates.vue";

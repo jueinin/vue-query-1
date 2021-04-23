@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, h } from "vue-demi";
 
 import { useTheme } from "../useTheme";
 
@@ -11,29 +11,27 @@ export default defineComponent({
       required: true,
     },
   },
-  setup() {
+  setup(props, { slots }) {
     const theme = useTheme();
 
-    return {
-      theme,
+    return () => {
+      return h("div", [
+        h(
+          "div",
+          {
+            class: "title",
+            style: {
+              background: theme.backgroundAlt,
+            },
+          },
+          props.title
+        ),
+        h("div", { class: "panel" }, slots),
+      ]);
     };
   },
 });
 </script>
-
-<template>
-  <div
-    class="title"
-    :style="{
-      background: theme.backgroundAlt,
-    }"
-  >
-    {{ title }}
-  </div>
-  <div class="panel">
-    <slot></slot>
-  </div>
-</template>
 
 <style scoped>
 .title {

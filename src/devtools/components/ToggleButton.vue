@@ -1,5 +1,5 @@
 <script lang="ts">
-import { computed, defineComponent, PropType } from "vue";
+import { computed, defineComponent, PropType, h } from "vue-demi";
 
 import Logo from "./Logo.vue";
 
@@ -55,21 +55,18 @@ export default defineComponent({
       ...props.buttonProps.style,
     }));
 
-    return {
-      onClick,
-      buttonStyles,
+    return () => {
+      return h(
+        "button",
+        {
+          type: "button",
+          ariaLabel: "Open Vue Query Devtools",
+          style: buttonStyles.value,
+          onClick: onClick,
+        },
+        [h(Logo)]
+      );
     };
   },
 });
 </script>
-
-<template>
-  <button
-    type="button"
-    aria-label="Open Vue Query Devtools"
-    @click="onClick"
-    :style="buttonStyles"
-  >
-    <logo />
-  </button>
-</template>

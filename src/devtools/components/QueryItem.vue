@@ -1,5 +1,5 @@
 <script lang="ts">
-import { computed, defineComponent, PropType } from "vue";
+import { computed, defineComponent, PropType, h } from "vue-demi";
 
 import type { Query } from "react-query/types";
 
@@ -17,7 +17,7 @@ export default defineComponent({
   setup(props, { emit }) {
     const theme = useTheme();
     // @ts-expect-error Accessing private property
-    const observerCount = computed(() => props.query.observers.length);
+    const observerCount = computed<number>(() => props.query.observers.length);
     const isStale = computed(
       () => getQueryState(props.query) === QueryState.Stale
     );
@@ -27,41 +27,38 @@ export default defineComponent({
       emit("selectQuery", props.query.queryHash);
     };
 
-    return {
-      theme,
-      observerCount,
-      isStale,
-      stateColor,
-      onQueryClick,
+    return () => {
+      const queryState = h(
+        "div",
+        {
+          class: "query-state",
+          style: {
+            background: stateColor.value,
+            textShadow: isStale.value ? "0" : "0 0 10px black",
+            color: isStale.value ? "black" : "white",
+          },
+        },
+        observerCount.value
+      );
+
+      const code = h("code", props.query.queryHash);
+
+      return h(
+        "div",
+        {
+          onClick: onQueryClick,
+          style: {
+            display: "flex",
+            borderBottom: `solid 1px ${theme.grayAlt}`,
+            cursor: "pointer",
+          },
+        },
+        [queryState, code]
+      );
     };
   },
 });
 </script>
-
-<template>
-  <div
-    @click="onQueryClick"
-    :style="{
-      display: 'flex',
-      borderBottom: `solid 1px ${theme.grayAlt}`,
-      cursor: 'pointer',
-    }"
-  >
-    <div
-      class="query-state"
-      :style="{
-        background: stateColor,
-        textShadow: isStale ? '0' : '0 0 10px black',
-        color: isStale ? 'black' : 'white',
-      }"
-    >
-      {{ observerCount }}
-    </div>
-    <code>
-      {{ query.queryHash }}
-    </code>
-  </div>
-</template>
 
 <style scoped>
 .query-state {

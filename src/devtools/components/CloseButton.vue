@@ -1,5 +1,5 @@
 <script lang="ts">
-import { computed, defineComponent, PropType } from "vue";
+import { computed, defineComponent, PropType, h } from "vue-demi";
 
 import { Position } from "../utils";
 import type { ButtonProps } from "../types";
@@ -40,14 +40,17 @@ export default defineComponent({
       ...props.buttonProps.style,
     }));
 
-    return {
-      onClick,
-      buttonStyles,
+    return () => {
+      return h(
+        "button",
+        {
+          type: "button",
+          style: buttonStyles.value,
+          onClick: onClick,
+        },
+        "Close"
+      );
     };
   },
 });
 </script>
-
-<template>
-  <button type="button" @click="onClick" :style="buttonStyles">Close</button>
-</template>

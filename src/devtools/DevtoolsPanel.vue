@@ -126,7 +126,7 @@ export default defineComponent({
             flexDirection: 'column',
           }"
         >
-          <QueryStates />
+          <QueryStates :queries="queries" />
           <QueryOptions @optionsChange="onOptionsChange" />
         </div>
       </div>

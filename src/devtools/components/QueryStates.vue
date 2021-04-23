@@ -1,26 +1,23 @@
 <script lang="ts">
-import { computed, defineComponent, Ref, ref } from "vue";
+import { computed, defineComponent, PropType } from "vue";
 import type { Query } from "react-query/types";
 
 import { useTheme } from "../useTheme";
-import { useQueryClient } from "../../useQueryClient";
 import { getQueryState, QueryState, QueryStateLabel } from "../utils";
 
 export default defineComponent({
   name: "QueryStates",
-  setup() {
+  props: {
+    queries: {
+      type: Array as PropType<Query[]>,
+      required: true,
+    },
+  },
+  setup(props) {
     const theme = useTheme();
-    const queries: Ref<Query[]> = ref([]);
-
-    const queryClient = useQueryClient();
-    const queryCache = queryClient.getQueryCache();
-
-    queryCache.subscribe(() => {
-      queries.value = Object.values(queryCache.getAll());
-    });
 
     const getQueryStateData = (state: QueryState) => {
-      const count = queries.value.filter((q) => getQueryState(q) === state)
+      const count = props.queries.filter((q) => getQueryState(q) === state)
         .length;
 
       return {

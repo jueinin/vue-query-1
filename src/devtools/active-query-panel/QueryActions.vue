@@ -1,5 +1,5 @@
 <script lang="ts">
-import { computed, defineComponent, PropType } from "vue";
+import { computed, defineComponent, PropType, h } from "vue-demi";
 
 import type { Query } from "react-query/types";
 
@@ -35,61 +35,60 @@ export default defineComponent({
       queryClient.removeQueries(props.query);
     };
 
-    return {
-      theme,
-      isFetching,
-      doFetch,
-      doInvalidate,
-      doReset,
-      doRemove,
+    return () => {
+      return h(InfoPanel, { title: "Actions" }, [
+        h(
+          "button",
+          {
+            type: "button",
+            disabled: isFetching.value,
+            style: {
+              background: isFetching.value ? theme.grayAlt : theme.active,
+              cursor: isFetching.value ? "not-allowed" : "pointer",
+            },
+            onClick: doFetch,
+          },
+          "Refetch"
+        ),
+        h(
+          "button",
+          {
+            type: "button",
+            style: {
+              background: theme.warning,
+              color: theme.inputTextColor,
+            },
+            onClick: doInvalidate,
+          },
+          "Invalidate"
+        ),
+        h(
+          "button",
+          {
+            type: "button",
+            style: {
+              background: theme.gray,
+            },
+            onClick: doReset,
+          },
+          "Reset"
+        ),
+        h(
+          "button",
+          {
+            type: "button",
+            style: {
+              background: theme.danger,
+            },
+            onClick: doRemove,
+          },
+          "Remove"
+        ),
+      ]);
     };
   },
 });
 </script>
-
-<template>
-  <InfoPanel title="Actions">
-    <button
-      type="button"
-      @click="doFetch"
-      :disabled="isFetching"
-      :style="{
-        background: isFetching ? theme.grayAlt : theme.active,
-        cursor: isFetching ? 'not-allowed' : 'pointer',
-      }"
-    >
-      Refetch
-    </button>
-    <button
-      type="button"
-      @click="doInvalidate"
-      :style="{
-        background: theme.warning,
-        color: theme.inputTextColor,
-      }"
-    >
-      Invalidate
-    </button>
-    <button
-      type="button"
-      @click="doReset"
-      :style="{
-        background: theme.gray,
-      }"
-    >
-      Reset
-    </button>
-    <button
-      type="button"
-      @click="doRemove"
-      :style="{
-        background: theme.danger,
-      }"
-    >
-      Remove
-    </button>
-  </InfoPanel>
-</template>
 
 <style scoped>
 button {

@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, PropType } from "vue";
+import { defineComponent, PropType, h } from "vue-demi";
 
 import type { Query } from "react-query/types";
 
@@ -17,27 +17,36 @@ export default defineComponent({
       required: true,
     },
   },
+  setup(props) {
+    return () => {
+      return h(
+        "div",
+        {
+          class: "active-query-panel",
+        },
+        [
+          h(QueryDetails, { query: props.query }),
+          h(QueryActions, { query: props.query }),
+          h(InfoPanel, { title: "Data Explorer" }, [
+            h(Explorer, {
+              label: "Data",
+              value: props.query.state.data,
+              defaultExpanded: {},
+            }),
+          ]),
+          h(InfoPanel, { title: "Query Explorer" }, [
+            h(Explorer, {
+              label: "Query",
+              value: props.query,
+              defaultExpanded: { queryKey: true },
+            }),
+          ]),
+        ]
+      );
+    };
+  },
 });
 </script>
-
-<template>
-  <div class="active-query-panel">
-    <QueryDetails :query="query" />
-    <QueryActions :query="query" />
-    <InfoPanel title="Data Explorer">
-      <Explorer label="Data" :value="query.state.data" :defaultExpanded="{}" />
-    </InfoPanel>
-    <InfoPanel title="Query Explorer">
-      <Explorer
-        label="Query"
-        :value="query"
-        :defaultExpanded="{
-          queryKey: true,
-        }"
-      />
-    </InfoPanel>
-  </div>
-</template>
 
 <style scoped>
 .active-query-panel {

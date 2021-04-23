@@ -1,5 +1,5 @@
 <script lang="ts">
-import { defineComponent, PropType, ref } from "vue";
+import { defineComponent, PropType, ref, h } from "vue-demi";
 
 import DevtoolsPanel from "./DevtoolsPanel.vue";
 import CloseButton from "./components/CloseButton.vue";
@@ -10,7 +10,6 @@ import type { ButtonProps, PanelProps } from "./types";
 
 export default defineComponent({
   name: "VueQueryDevTools",
-  components: { CloseButton, DevtoolsPanel, ToggleButton },
   props: {
     initialIsOpen: {
       type: Boolean,
@@ -80,45 +79,46 @@ export default defineComponent({
       document.addEventListener("mouseup", unsub);
     };
 
-    return {
-      isOpen,
-      isResizing,
-      devtoolsHeight,
-      panelRef,
-      onToggleClick,
-      handleDragStart,
+    return () => {
+      const devtoolsPanel = h(
+        // @ts-expect-error Investigate the typing error
+        DevtoolsPanel,
+        {
+          class: {
+            "devtools-panel": true,
+            resizing: isResizing.value,
+            open: isOpen.value,
+          },
+          ref: panelRef,
+          onHandleDragStart: handleDragStart,
+          isOpen: isOpen.value,
+          panelProps: props.panelProps,
+          style: {
+            height: devtoolsHeight.value,
+          },
+        }
+      );
+
+      const closeButton = h(CloseButton, {
+        position: props.position,
+        buttonProps: props.closeButtonProps,
+        onClick: onToggleClick,
+      });
+
+      const toggleButton = h(ToggleButton, {
+        position: props.position,
+        buttonProps: props.toggleButtonProps,
+        onClick: onToggleClick,
+      });
+
+      return h("div", { class: "VueQueryDevtools" }, [
+        devtoolsPanel,
+        isOpen.value ? closeButton : toggleButton,
+      ]);
     };
   },
 });
 </script>
-
-<template>
-  <div class="VueQueryDevtools">
-    <DevtoolsPanel
-      class="devtools-panel"
-      ref="panelRef"
-      @handleDragStart="handleDragStart"
-      :class="{ resizing: isResizing, open: isOpen }"
-      :style="{
-        height: devtoolsHeight,
-      }"
-      :isOpen="isOpen"
-      :panelProps="panelProps"
-    />
-    <CloseButton
-      v-if="isOpen"
-      :position="position"
-      :buttonProps="closeButtonProps"
-      @click="onToggleClick"
-    />
-    <ToggleButton
-      v-if="!isOpen"
-      :position="position"
-      :buttonProps="toggleButtonProps"
-      @click="onToggleClick"
-    />
-  </div>
-</template>
 
 <style scoped>
 .devtools-panel {

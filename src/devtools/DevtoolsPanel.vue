@@ -1,7 +1,15 @@
 <script lang="ts">
 import { matchSorter } from "match-sorter";
 import type { Query } from "react-query/core";
-import { computed, defineComponent, PropType, reactive, Ref, ref } from "vue";
+import {
+  computed,
+  defineComponent,
+  PropType,
+  reactive,
+  Ref,
+  ref,
+  h,
+} from "vue-demi";
 
 import { sortFns, getQueryState } from "./utils";
 import { useTheme } from "./useTheme";
@@ -47,6 +55,7 @@ export default defineComponent({
     });
     const onOptionsChange = (newOptions: Options) => {
       Object.assign(options, newOptions);
+      queries.value = getSortedQueries();
     };
 
     const queries: Ref<Query[]> = ref([]);
@@ -85,71 +94,72 @@ export default defineComponent({
       emit("handleDragStart", event);
     };
 
-    return {
-      theme,
-      devtoolsPanelStyles,
-      queries,
-      getQueryState,
-      onOptionsChange,
-      activeQuery,
-      selectQuery,
-      handleDragStart,
+    return () => {
+      const queryList = queries.value.map((query) => {
+        return h(QueryItem, {
+          key: getQueryState(query) + query.state.dataUpdatedAt,
+          query: query,
+          style: {
+            background:
+              query === activeQuery.value ? "rgba(255,255,255,.1)" : undefined,
+          },
+          onSelectQuery: selectQuery,
+        });
+      });
+
+      return h(
+        "div",
+        {
+          class: "VueQueryDevtoolsPanel",
+          style: devtoolsPanelStyles.value,
+        },
+        [
+          h("div", { class: "resize-bar", onMousedown: handleDragStart }),
+          h(
+            "div",
+            {
+              class: "query-panel",
+              style: {
+                borderRight: `1px solid ${theme.grayAlt}`,
+              },
+            },
+            [
+              h(
+                "div",
+                {
+                  class: "query-panel-header",
+                  style: {
+                    background: theme.backgroundAlt,
+                  },
+                },
+                [
+                  h(Logo, {
+                    ariaHidden: true,
+                    style: { marginRight: ".5rem" },
+                  }),
+                  h("div", { class: "vertical-list" }, [
+                    h(QueryStates, { queries: queries.value }),
+                    h(QueryOptions, { onOptionsChange: onOptionsChange }),
+                  ]),
+                ]
+              ),
+              h("div", { class: "query-list" }, queryList),
+            ]
+          ),
+          activeQuery.value
+            ? h(ActiveQueryPanel, {
+                key:
+                  getQueryState(activeQuery.value) +
+                  activeQuery.value.state.dataUpdatedAt,
+                query: activeQuery.value,
+              })
+            : undefined,
+        ]
+      );
     };
   },
 });
 </script>
-
-<template>
-  <div class="VueQueryDevtoolsPanel" :style="devtoolsPanelStyles">
-    <div class="resize-bar" @mousedown="handleDragStart"></div>
-    <div
-      class="query-panel"
-      :style="{
-        borderRight: `1px solid ${theme.grayAlt}`,
-      }"
-    >
-      <div
-        class="query-panel-header"
-        :style="{
-          background: theme.backgroundAlt,
-        }"
-      >
-        <Logo
-          aria-hidden
-          :style="{
-            marginRight: '.5rem',
-          }"
-        />
-        <div
-          :style="{
-            display: 'flex',
-            flexDirection: 'column',
-          }"
-        >
-          <QueryStates :queries="queries" />
-          <QueryOptions @optionsChange="onOptionsChange" />
-        </div>
-      </div>
-      <div class="query-list">
-        <QueryItem
-          v-for="query in queries"
-          @selectQuery="selectQuery"
-          :key="getQueryState(query) + query.state.dataUpdatedAt"
-          :query="query"
-          :style="{
-            background:
-              query === activeQuery ? 'rgba(255,255,255,.1)' : undefined,
-          }"
-        />
-      </div>
-    </div>
-    <ActiveQueryPanel
-      v-if="activeQuery"
-      :key="getQueryState(activeQuery) + activeQuery.state.dataUpdatedAt"
-      :query="activeQuery"
-    />
-  </div>
-</template>
 
 <style scoped>
 .VueQueryDevtoolsPanel {
@@ -179,6 +189,11 @@ export default defineComponent({
   top: 0;
   width: 100%;
   z-index: 100000;
+}
+
+.vertical-list {
+  display: flex;
+  flex-direction: column;
 }
 
 .query-panel {
